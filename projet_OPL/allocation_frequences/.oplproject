@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ASCII"?><project>
+	<version>1.0</version>
+	<configs>
+		<config default="true" name="Configuration 1" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+		</config>
+		<config default="false" name="Configuration 2" category="opl">
+			<ref name="allocation_freq_2.mod" type="model">
+			</ref>
+		</config>
+		<config default="false" name="Configuration 3" category="opl">
+			<ref name="allocation_freq_3.mod" type="model">
+			</ref>
+		</config>
+	</configs>
+	
+</project>
