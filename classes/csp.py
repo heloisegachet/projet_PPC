@@ -3,7 +3,6 @@ from classes.generic_constraints import diff, diag
 import networkx as nx
 import matplotlib.pyplot as plt
 
-
 class csp:
     # classe représentant un problème
 
@@ -14,10 +13,12 @@ class csp:
         self.inst = list() #liste de tuples (nom de la variable instanciée, valeur)
         self.free_var = list() #liste des variables qui ne sont pas instanciées
         self.FC_domain_deletion = dict()
+        self.AC_domain_deletion = []
         self.params = dict()
 
-    def n_queens(self, n, is_FC):
+    def n_queens(self, n, is_FC, is_MAC):
         self.params["is_FC"] = is_FC
+        self.params["is_MAC"] = is_MAC
         self.var = [i for i in range(1, n + 1)]
         self.free_var = [i for i in range(1, n + 1)]
         for x in self.var:
@@ -32,8 +33,9 @@ class csp:
                     self.const[x,y]=make_closure(x,y)
 
 
-    def colorability(self, E, is_FC): # E = matrice d'adjacence
+    def colorability(self, E, is_FC, is_MAC): # E = matrice d'adjacence
         self.params["is_FC"] = is_FC
+        self.params["is_MAC"] = is_MAC
         n = E.shape[0]
         self.var = [i for i in range(n)]
         self.free_var = [i for i in range(n)]
@@ -48,13 +50,23 @@ class csp:
             for y in self.var:
                 if E[x, y] == 1:
                     self.const[x, y] = make_closure(x,y)
+
     def is_FC(self):
         return self.params["is_FC"]
+    def is_MAC(self):
+        return self.params["is_MAC"]
 
+    def remove_val_from_dom(self, x, a):
+        #print(self.dom[x])
+        i = np.where(self.dom[x]["dom"]==a)[0][0]
+        index_domaine = self.dom[x]["index"]
+        while i < index_domaine - 1:
+            self.dom[x]["dom"][i], self.dom[x]["dom"][i + 1] = self.dom[x]["dom"][i + 1], self.dom[x]["dom"][i]
+            i = i + 1
+        self.dom[x]["index"] = index_domaine - 1
+        #print(self.dom[x])
 
     def inst_var(self, x, v): #instanciation de la variable x à la valeur v
-        print(x)
-        print(self.free_var)
         self.free_var.remove(x)
         self.inst.append((x, v))
 
@@ -67,6 +79,9 @@ class csp:
 
     def current_dom(self,x):
         domaine, index = self.dom[x].values()
+        for (y,b) in self.inst:
+            if x==y:
+                return [b]
         return domaine[:index]
 
     def test_inst(self): #vérifie que la dernière variable instanciée est compatible avec
@@ -78,11 +93,9 @@ class csp:
         for i in range(len(self.inst) - 1):
             x = self.inst[i][0]
             x_val = self.inst[i][1]
-            print("variables ", last_var, x, " valeurs", last_val, x_val)
             if (x, last_var) in self.const:
-                print("check constraint")
                 if (self.const[x,last_var](x_val, last_val) == False):
-                    print("FALSE")
+                    print("constraint FALSE")
                     return self.const[x,last_var](x_val, last_val)
         return True
 
@@ -93,19 +106,34 @@ class csp:
         for i in range(len(self.inst)):
             x = self.inst[i][0]
             x_val = self.inst[i][1]
-            print("variables ", var, x, " valeurs", val, x_val)
             if (x, var) in self.const:
-                print("check constraint")
                 if (self.const[x,var](x_val, val) == False):
-                    print("FALSE")
+                    print("constraint FALSE")
                     return self.const[x,var](x_val, val)
         return True
 
+    def cancel_AC(self):
+        incr_index = dict()
+        for (x, a) in self.AC_domain_deletion:
+            if not a in self.current_dom(x):
+                incr_index[x] = incr_index.get(x, 0) + 1
+        for x in incr_index.keys():
+            self.dom[x]["index"] += incr_index[x]
+        self.AC_domain_deletion = []
+
     def cancel(self): #revenir en arrière sur la dernière instanciation
         # et ajout de la variable anciennement instanciée aux variables non instanciées
+        print("cancel instanciation finale")
         last_var = self.inst.pop()[0]
         self.dom[last_var]["index"] = len(self.dom[last_var]["dom"])#self.dom[last_var]["index"] + 1
+        self.cancel_AC()
         self.free_var.append(last_var)
+
+    def empty_dom(self):
+        for x in self.var:
+            if self.dom[x]["index"]==0:
+                return True
+        return False
 
     def checkSupport(self, x, val_x, y):
         value_isSupportee = False

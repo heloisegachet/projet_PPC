@@ -6,20 +6,17 @@ def AC3(problem, infos=False):
 		x,y = aTester.pop()
 		if infos:
 			print("test variables", x, "et", y)
-		for i,val_x in enumerate(problem.current_dom(x)):
-			value_isSupportee = problem.checkSupport(x, val_x, y)
+		for i,a in enumerate(problem.current_dom(x)):
+			value_isSupportee = problem.checkSupport(x, a, y)
 			if infos:
-				print("valeur", val_x)
+				print("valeur", a)
 				print("supportée" if value_isSupportee else "non supportée")
 			if not value_isSupportee:
-				print(problem.dom[x])
-				index_domaine = problem.dom[x][1]
-				while i < index_domaine:
-					problem.dom[x][0][i],problem.dom[x][0][i+1] = problem.dom[x][0][i+1],problem.dom[x][0][i]
-					i = i+1
-				problem.dom[x][1] = index_domaine - 1
-				print(problem.dom[x])
+				problem.MAC_domain_deletion.append((x, a))
+				problem.remove_val_from_dom(x, a)
 				for elem in problem.const.keys():
 					if elem[0]==x and elem[1]!=y:
 						aTester.append((elem[1],x))
 	print("   fin AC3")
+
+
