@@ -29,8 +29,19 @@
      x[i, j]==x[N-i+1, N-j+1];
  }
  
-execute {
-	for(var i=3; i<=thisOplModel.N-2; i++){
+ 
+ main {
+  var f = cp.factory;
+  var phase1 = f.searchPhase(
+		thisOplModel.x,
+		f.selectSmallest(f.domainSize()),
+		f.selectSmallest(f.value()));
+  cp.setSearchPhases(phase1);
+  cp.param.SearchType="DepthFirst";
+  cp.param.Workers=1;
+  thisOplModel.generate();
+  if(cp.solve()){
+    for(var i=3; i<=thisOplModel.N-2; i++){
    		for(var j=3; j<=thisOplModel.N-2; j++){
    			if(thisOplModel.x[i][j]==1){
        			write("O ");
@@ -40,4 +51,5 @@ execute {
      	}
      	writeln("");
 	}
+  }
 }

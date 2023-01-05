@@ -4,8 +4,6 @@
  * Creation Date: 29 déc. 2022 at 23:15:38
  *********************************************/
 
- using CP;
-
  int n = ...;
  int N = n+4;
  
@@ -28,7 +26,7 @@
    forall(i in 1..N, j in 1..N)
      x[i, j]==x[N-i+1, N-j+1];
  }
- 
+
 execute {
 	for(var i=3; i<=thisOplModel.N-2; i++){
    		for(var j=3; j<=thisOplModel.N-2; j++){
