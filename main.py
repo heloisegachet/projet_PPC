@@ -31,7 +31,7 @@ def parse_graph(filepath):
 def solver_test(type_instance):
 	is_FC = False
 	is_MAC = True
-	AC = "AC4"
+	AC = "AC3"
 	problem=csp()
 	if type_instance == "n_queens":
 		n=8

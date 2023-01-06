@@ -17,8 +17,8 @@ def forward_checking(problem, infos=True):
             i = 0
             while i < problem.dom[y]["index"]:
                 b = problem.current_dom(y)[i]
-                problem.FC_domain_deletion[var].append((y,b))
                 if not problem.const[var, y](val, b):
+                    problem.FC_domain_deletion[var].append((y, b))
                     problem.remove_val_from_dom(y, b)
                 else:
                     i += 1

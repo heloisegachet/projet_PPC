@@ -106,6 +106,19 @@ class csp:
             i = np.argmax(self.dom[var]["dom"][index:self.dom[var]["index"]])+index
             self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
             return self.dom[var]["dom"][index]
+        if method == "const_max":
+            support = dict()
+            for val in self.current_dom(var):
+                support[val] = 0
+                for (x,y), funct in self.const.items():
+                    if x==var and y in self.free_var:
+                        for b in self.current_dom(y):
+                            if funct(val,b):
+                                support[val] = support[val] + 1
+            i = np.argmax(support) + index
+            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
+            return self.dom[var]["dom"][index]
+
 
 
     def current_dom(self,x):

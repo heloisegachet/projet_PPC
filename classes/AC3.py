@@ -9,9 +9,6 @@ def AC3(problem, var, infos=False):
 			print("test variables", x, "et", y)
 		for i,a in enumerate(problem.current_dom(x)):
 			value_isSupportee = problem.checkSupport(x, a, y)
-			if infos:
-				print("valeur", a)
-				print("supportée" if value_isSupportee else "non supportée")
 			if not value_isSupportee:
 				problem.AC_domain_deletion[var].append((x, a))
 				problem.remove_val_from_dom(x, a)
