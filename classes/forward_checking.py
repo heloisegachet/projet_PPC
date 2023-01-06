@@ -1,6 +1,7 @@
 
 def forward_checking(problem, infos=True):
-    print("   begin checking")
+    if infos:
+        print("   begin checking")
     incr_index = dict()
     var,val = problem.inst[-1]
     for (y,b) in problem.FC_domain_deletion[var]:
@@ -27,6 +28,7 @@ def forward_checking(problem, infos=True):
                 return False
         if infos:
             print("end var", y, "domaine", problem.current_dom(y))
-    print("   end checking")
+    if infos:
+        print("   end checking")
     return True
 

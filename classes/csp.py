@@ -13,18 +13,20 @@ class csp:
         self.inst = list() #liste de tuples (nom de la variable instanciée, valeur)
         self.free_var = list() #liste des variables qui ne sont pas instanciées
         self.FC_domain_deletion = dict()
-        self.AC_domain_deletion = []
+        self.AC_domain_deletion = dict()
         self.params = dict()
 
-    def n_queens(self, n, is_FC, is_MAC):
+    def n_queens(self, n, is_FC, is_MAC, AC):
         self.params["is_FC"] = is_FC
         self.params["is_MAC"] = is_MAC
+        self.params["AC"] = AC
         self.var = [i for i in range(1, n + 1)]
         self.free_var = [i for i in range(1, n + 1)]
         for x in self.var:
             self.dom[x] = {"dom":np.arange(1, n + 1),"index":n}
         for x in self.var:
             self.FC_domain_deletion[x] = []
+            self.AC_domain_deletion[x] = []
         def make_closure(x, y):
             return lambda i, j: (diff(x, y, i, j) and diag(x, y, i, j))
         for x in self.var:
@@ -33,17 +35,19 @@ class csp:
                     self.const[x,y]=make_closure(x,y)
 
 
-    def colorability(self, E, is_FC, is_MAC): # E = matrice d'adjacence
+    def colorability(self, E, colors, is_FC, is_MAC, AC): # E = matrice d'adjacence
         self.params["is_FC"] = is_FC
         self.params["is_MAC"] = is_MAC
+        self.params["AC"] = AC
         n = E.shape[0]
         self.var = [i for i in range(n)]
         self.free_var = [i for i in range(n)]
         # peut être affiné par le degré max
         for x in self.var:
-            self.dom[x] = {"dom":np.arange(n),"index":n}
+            self.dom[x] = {"dom":np.arange(colors),"index":colors}
         for x in self.var:
             self.FC_domain_deletion[x] = []
+            self.AC_domain_deletion[x] = []
         def make_closure(x, y):
             return lambda i, j: (diff(x, y, i, j))
         for x in self.var:
@@ -53,8 +57,12 @@ class csp:
 
     def is_FC(self):
         return self.params["is_FC"]
+
     def is_MAC(self):
         return self.params["is_MAC"]
+
+    def AC(self):
+        return self.params["AC"]
 
     def remove_val_from_dom(self, x, a):
         #print(self.dom[x])
@@ -72,10 +80,33 @@ class csp:
 
     def choose_var(self, method='smallest_dom'):
         if method == 'default':
-            return self.free_var[0]
+            return min(self.free_var)
+        if method == 'random':
+            return np.choose(self.free_var)
         if method == "smallest_dom":
-            i = np.argmin([len(self.current_dom(y)) for y in self.free_var])
-            return self.free_var[i]
+            elem = ([(len(self.current_dom(y)), y) for y in self.free_var])
+            elem.sort()
+            return elem[0][1]
+        if method == "biggest_const":
+            elem = [(len(x for x,z in self.const.keys() if z==y), -y) for y in self.free_var]
+            elem.sort(reverse=True)
+            return elem[0][1]
+        if method == "biggest_const_non_inst":
+            elem = [(len(x for x,z in self.const.keys() if x in self.free_var and z==y), -y) for y in self.free_var]
+            elem.sort(reverse=True)
+            return elem[0][1]
+
+    def choose_val(self, var, index, method='max'):
+        if method == 'default':
+            i = index
+            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
+            #return min(self.dom[var]["dom"][index:self.dom[var]["index"]])
+            return self.dom[var]["dom"][index]
+        if method == 'max':
+            i = np.argmax(self.dom[var]["dom"][index:self.dom[var]["index"]])+index
+            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
+            return self.dom[var]["dom"][index]
+
 
     def current_dom(self,x):
         domaine, index = self.dom[x].values()
@@ -99,7 +130,7 @@ class csp:
                     return self.const[x,last_var](x_val, last_val)
         return True
 
-    def test_inst_var(self, var, val, infos=True): #vérifie que la variable instanciée est compatible avec
+    def test_inst_var(self, var, val, infos=False): #vérifie que la variable instanciée est compatible avec
                         # toutes les valeurs des variables précédentes
         if len(self.inst) < 1:
             return True
@@ -108,25 +139,25 @@ class csp:
             x_val = self.inst[i][1]
             if (x, var) in self.const:
                 if (self.const[x,var](x_val, val) == False):
-                    print("constraint FALSE")
+                    if infos:
+                        print("constraint FALSE")
                     return self.const[x,var](x_val, val)
         return True
 
-    def cancel_AC(self):
+    def cancel_AC(self, last_var):
         incr_index = dict()
-        for (x, a) in self.AC_domain_deletion:
+        for (x, a) in self.AC_domain_deletion[last_var]:
             if not a in self.current_dom(x):
                 incr_index[x] = incr_index.get(x, 0) + 1
         for x in incr_index.keys():
             self.dom[x]["index"] += incr_index[x]
-        self.AC_domain_deletion = []
+        self.AC_domain_deletion[last_var] = []
 
     def cancel(self): #revenir en arrière sur la dernière instanciation
         # et ajout de la variable anciennement instanciée aux variables non instanciées
-        print("cancel instanciation finale")
         last_var = self.inst.pop()[0]
-        self.dom[last_var]["index"] = len(self.dom[last_var]["dom"])#self.dom[last_var]["index"] + 1
-        self.cancel_AC()
+        #self.dom[last_var]["index"] = len(self.dom[last_var]["dom"])
+        self.cancel_AC(last_var)
         self.free_var.append(last_var)
 
     def empty_dom(self):
