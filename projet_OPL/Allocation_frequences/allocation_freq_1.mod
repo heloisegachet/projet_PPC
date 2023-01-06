@@ -12,31 +12,26 @@ tuple Offset{
   int valeur;
 }
 
-{Offset} offset = {
-   <1,2,3>,
-   <1,5,2>,
-   <2,3,2>,
-   <2,4,1>,
-   <2,5,2>,
-   <3,4,3>,
-   <3,5,1>,
-   <6,3,1>,
-   <6,4,2>,
-   <7,2,3>,
-   <7,3,2>
-};
+int n_transmitters = ...;
+int n_freq = ...;
 
-dvar int x[1..7] in 1..10;
+{Offset} offset = ...;
 
-// commenter ou non la ligne
+dvar int x[1..n_transmitters] in 1..n_freq;
+
+// commenter ou non la ligne selon si on veut une solution faisable ou optimale
 minimize max(i in 1..7) x[i];
 
 constraints {
-  forall(i in 1..7 : i%2==0)
+  forall(i in 1..n_transmitters : i%2==0)
     x[i]%2 == 1;
-  forall(i in 1..7 : i%2==1)
+  forall(i in 1..n_transmitters : i%2==1)
     x[i]%2 == 0;
   forall(o in offset) {
     abs(x[o.ti]-x[o.tj]) >= o.valeur;
   }
+}
+
+execute {
+  writeln(thisOplModel.x);
 }

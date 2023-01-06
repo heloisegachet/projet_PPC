@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ASCII"?><project>
+	<version>1.0</version>
+	<configs>
+		<config default="true" name="Configuration 1" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="Configuration 2" category="opl">
+			<ref name="allocation_freq_2.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="Configuration 3" category="opl">
+			<ref name="allocation_freq_3.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="Param_default" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+			<ref name="param_default.ops" type="setting">
+			</ref>
+		</config>
+		<config default="false" name="param1" category="opl">
+			<ref name="param1.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="param2" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="param2.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="param3" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="param3.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="param4" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="param4.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="param5" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="param5.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="param6" category="opl">
+			<ref name="allocation_freq_1.mod" type="model">
+			</ref>
+			<ref name="param6.ops" type="setting">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+		<config default="false" name="SearchPhase" category="opl">
+			<ref name="allocation_freq_sp.mod" type="model">
+			</ref>
+			<ref name="allocation_freq.dat" type="data">
+			</ref>
+		</config>
+	</configs>
+	
+</project>

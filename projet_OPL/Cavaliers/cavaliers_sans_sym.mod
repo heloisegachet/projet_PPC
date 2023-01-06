@@ -24,9 +24,6 @@
      x[i][j]==0;
    forall(i in 3..N-2, j in 3..N-2)
      x[i,j] + x[i-2, j+1]+x[i-1, j+2]+x[i+1, j+2]+x[i+2, j+1]+x[i+2, j-1]+x[i+1 ,j-2]+x[i-1, j-2]+x[i-2, j-1] >=1;
-   // contraintes de symétrie : symétrie par rotation
-   forall(i in 1..N, j in 1..N)
-     x[i, j]==x[N-i+1, N-j+1];
  }
  
 execute {
