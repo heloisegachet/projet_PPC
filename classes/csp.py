@@ -1,4 +1,5 @@
 import numpy as np
+
 from classes.generic_constraints import diff, diag
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -16,10 +17,8 @@ class csp:
         self.AC_domain_deletion = dict()
         self.params = dict()
 
-    def n_queens(self, n, is_FC, is_MAC, AC):
-        self.params["is_FC"] = is_FC
-        self.params["is_MAC"] = is_MAC
-        self.params["AC"] = AC
+    def n_queens(self, n, params):
+        self.params = params
         self.var = [i for i in range(1, n + 1)]
         self.free_var = [i for i in range(1, n + 1)]
         for x in self.var:
@@ -35,10 +34,8 @@ class csp:
                     self.const[x,y]=make_closure(x,y)
 
 
-    def colorability(self, E, colors, is_FC, is_MAC, AC): # E = matrice d'adjacence
-        self.params["is_FC"] = is_FC
-        self.params["is_MAC"] = is_MAC
-        self.params["AC"] = AC
+    def colorability(self, E, colors, params): # E = matrice d'adjacence
+        self.params = params
         n = E.shape[0]
         self.var = [i for i in range(n)]
         self.free_var = [i for i in range(n)]
@@ -78,7 +75,8 @@ class csp:
         self.free_var.remove(x)
         self.inst.append((x, v))
 
-    def choose_var(self, method='smallest_dom'):
+    def choose_var(self):
+        method = self.params["choose_var"]
         if method == 'default':
             return min(self.free_var)
         if method == 'random':
@@ -96,29 +94,22 @@ class csp:
             elem.sort(reverse=True)
             return elem[0][1]
 
-    def choose_val(self, var, index, method='max'):
+    def ordered(self, var, dom):
+        method = self.params["choose_val"]
         if method == 'default':
-            i = index
-            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
-            #return min(self.dom[var]["dom"][index:self.dom[var]["index"]])
-            return self.dom[var]["dom"][index]
-        if method == 'max':
-            i = np.argmax(self.dom[var]["dom"][index:self.dom[var]["index"]])+index
-            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
-            return self.dom[var]["dom"][index]
+            dom = np.sort(dom)
+            return dom
         if method == "const_max":
             support = dict()
             for val in self.current_dom(var):
                 support[val] = 0
-                for (x,y), funct in self.const.items():
-                    if x==var and y in self.free_var:
+                for (x, y), funct in self.const.items():
+                    if x == var and y in self.free_var:
                         for b in self.current_dom(y):
-                            if funct(val,b):
+                            if funct(val, b):
                                 support[val] = support[val] + 1
-            i = np.argmax(support) + index
-            self.dom[var]["dom"][index], self.dom[var]["dom"][i] = self.dom[var]["dom"][i], self.dom[var]["dom"][index]
-            return self.dom[var]["dom"][index]
-
+            dom = np.sorted(dom, key=lambda x:support[x], reversed=True)
+            return dom
 
 
     def current_dom(self,x):
@@ -166,11 +157,21 @@ class csp:
             self.dom[x]["index"] += incr_index[x]
         self.AC_domain_deletion[last_var] = []
 
+    def cancel_FC(self, last_var):
+        incr_index = dict()
+        for (x, a) in self.FC_domain_deletion[last_var]:
+            if not a in self.current_dom(x):
+                incr_index[x] = incr_index.get(x, 0) + 1
+        for x in incr_index.keys():
+            self.dom[x]["index"] += incr_index[x]
+        self.FC_domain_deletion[last_var] = []
+
     def cancel(self): #revenir en arrière sur la dernière instanciation
         # et ajout de la variable anciennement instanciée aux variables non instanciées
         last_var = self.inst.pop()[0]
         #self.dom[last_var]["index"] = len(self.dom[last_var]["dom"])
         self.cancel_AC(last_var)
+        self.cancel_FC(last_var)
         self.free_var.append(last_var)
 
     def empty_dom(self):

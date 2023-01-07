@@ -5,8 +5,8 @@
 import numpy as np
 from classes.csp import csp
 from classes.backtrack import solve
-from classes.AC3 import AC3
-from classes.AC4 import AC4
+import time
+import matplotlib.pyplot as plt
 
 def parse_graph(filepath):
 	file = open(filepath, 'r')
@@ -16,60 +16,99 @@ def parse_graph(filepath):
 	# nombre de sommets
 	n = int(info[2])
 	# nombre d'arêtes
-	m = int(info[3])//2
-	E = np.zeros((n,n))
+	m = int(info[3]) // 2
+	E = np.zeros((n, n))
 	for i in range(4, len(lines)):
 		line = lines[i].replace('\n', '').split(' ')
 		nodes = [int(p) for p in line if p.isdigit()]
 		# indices de 1 à n dans le fichier, 0 à n-1 dans le programme
-		E[nodes[0]-1, nodes[1]-1]=1
+		E[nodes[0] - 1, nodes[1] - 1] = 1
 		E[nodes[1] - 1, nodes[0] - 1] = 1
 	file.close()
 	return E
 
 
-def solver_test(type_instance):
-	is_FC = False
-	is_MAC = True
-	AC = "AC3"
-	problem=csp()
+def solver_test(type_instance, instance, params, plot_table):
 	if type_instance == "n_queens":
-		n=8
-		problem.n_queens(n, is_FC, is_MAC, AC)
-		solve(problem, infos=True)
-		print("solution finale : ", problem.inst)
-		problem.n_queens_solution(n)
+		problem = csp()
+		problem.n_queens(instance, params)
+		solve(problem, infos=False)
+		print("solution finale pour ",instance, problem.inst)
 		print(problem.params)
+		plot_table["time"].append(problem.params["time"])
+		plot_table["nb_nodes"].append(problem.params["noeuds tot"])
 	if type_instance == "colorability":
-		E = parse_graph("myciel4.col")
-		colors = 0
-		while True:
-			problem.colorability(E, colors, is_FC, is_MAC, AC)
+		start = time.time()
+		colors = int(np.max(np.sum(instance, axis=0))) + 1
+		while colors > 0:
+			problem = csp()
+			problem.colorability(instance, colors, params)
 			solve(problem, infos=False)
-			if len(problem.inst)!=0:
-				print("nb colors", colors)
-				print("solution finale : ", problem.inst)
+			if len(problem.inst) == 0:
+				pb_vide_params = problem.params.copy()
 				break
-			colors += 1
-		#problem.colorability_solution(E)
-		print(problem.params)
+			colors -= 1
+			sol = problem.inst.copy()
+			sol_params = problem.params.copy()
+		stop = time.time()
+		print("nb colors", colors+1)
+		print("sol", sol)
+		# problem.colorability_solution(E)
+		print(sol_params)
+		print("not colorable", colors)
+		print("params", pb_vide_params)
+		print("time tot : ", stop - start)
 	else:
 		print("problem")
-	#problem.colorability_solution(E)
-	# check solution for colorability
-	# transformation en dico parce que plus facile
-	#sol= dict()
-	# for (x,v) in solution:
-	# 	sol[x] = v
-	# n = E.shape[0]
-	# for i in range(n):
-	# 	for j in range(n):
-	# 		if (E[i][j]==1) and sol[i]==sol[j]:
-	# 			print('aie aie aie')
 
+def test_with_params(params, type_instance):
+	if type_instance == "colorability":
+		instance = parse_graph("myciel4.col")
+		solver_test(type_instance, instance, params)
+	if type_instance == "n_queens":
+		solver_test(type_instance, instance, params)
+
+def test_n_queen_best_method():
+	plot_dict = dict()
+	for key in ["backtrack", "rootAC3", "rootAC4", "FC", "MAC3", "MAC4"]:
+		plot_dict[key] = {"time":[], "nb_nodes":[]}
+	range_n = range(4,17)
+	for n in range_n:
+		type_instance = "n_queens"
+		params = {"is_FC": False, "is_MAC": False, "AC": "AC3", "root_AC": False, "choose_var": "default",
+				  "choose_val": "default"}
+		solver_test(type_instance, n, params, plot_dict["backtrack"])
+		print()
+		for AC in ["AC3", "AC4"]:
+			params = {"is_FC": False, "is_MAC": False, "AC": AC, "root_AC": True, "choose_var": "default",
+					  "choose_val": "default"}
+			solver_test(type_instance, n, params, plot_dict["root"+AC])
+			print()
+		print("TEST FC")
+		params = {"is_FC": True, "is_MAC": False, "AC": AC, "root_AC": False, "choose_var": "default",
+				  "choose_val": "default"}
+		solver_test(type_instance, n, params, plot_dict["FC"])
+		print()
+		for AC in ["AC4", "AC3"]:
+			print("TEST MAC ",AC)
+			params = {"is_FC": False, "is_MAC": True, "AC": AC, "root_AC": False, "choose_var": "default",
+					  "choose_val": "default"}
+			solver_test(type_instance, n, params, plot_dict["M"+AC])
+			print()
+
+	plt.figure()
+	for key in plot_dict.keys():
+		print(plot_dict[key])
+		plt.plot([n for n in range_n], plot_dict[key]["time"], label=key)
+	plt.legend(loc="upper left")
+	plt.show()
+	plt.figure()
+	for key in plot_dict.keys():
+		plt.plot([n for n in range_n], plot_dict[key]["nb_nodes"], label=key)
+	plt.legend(loc="upper left")
+	plt.show()
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-	solver_test("colorability")
-
+	test_n_queen_best_method()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
