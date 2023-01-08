@@ -10,7 +10,8 @@ def AC3(problem, var, infos=False):
 			for a in domain_init:
 				value_isSupportee = problem.checkSupport(x, a, y)
 				if not value_isSupportee:
-					problem.AC_domain_deletion[var].append((x, a))
+					if var != None:
+						problem.AC_domain_deletion[var].append((x, a))
 					problem.remove_val_from_dom(x, a)
 					if infos:
 						print("remove ",x,"val",a)

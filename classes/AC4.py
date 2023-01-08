@@ -12,7 +12,8 @@ def AC4(problem, var, infos=False):
                 if infos:
                     print("remove val", a, "from var", x)
                 problem.remove_val_from_dom(x, a)
-                problem.AC_domain_deletion[var].append((x,a))
+                if var != None:
+                    problem.AC_domain_deletion[var].append((x,a))
                 if len(problem.current_dom(x)) == 0:
                     if infos:
                         print("EMPTY DOMAIN")
@@ -46,7 +47,8 @@ def initAC4(problem, var, infos=True):
                 if count[x, y, a] == 0:
                     if infos:
                         print("remove val", a, "from var", x, "due to",y)
-                    problem.AC_domain_deletion[var].append((x, a))
+                    if var != None:
+                        problem.AC_domain_deletion[var].append((x, a))
                     problem.remove_val_from_dom(x, a)
                     Q.append((x, a))
     if infos:

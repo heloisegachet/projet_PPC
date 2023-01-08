@@ -18,7 +18,8 @@ class csp:
         self.params = dict()
 
     def n_queens(self, n, params):
-        self.params = params
+        self.params = dict()
+        self.params = params.copy()
         self.var = [i for i in range(1, n + 1)]
         self.free_var = [i for i in range(1, n + 1)]
         for x in self.var:
@@ -35,7 +36,8 @@ class csp:
 
 
     def colorability(self, E, colors, params): # E = matrice d'adjacence
-        self.params = params
+        self.params = dict()
+        self.params = params.copy()
         n = E.shape[0]
         self.var = [i for i in range(n)]
         self.free_var = [i for i in range(n)]
@@ -80,19 +82,19 @@ class csp:
         if method == 'default':
             return min(self.free_var)
         if method == 'random':
-            return np.choose(self.free_var)
+            return np.random.choice(self.free_var)
         if method == "smallest_dom":
             elem = ([(len(self.current_dom(y)), y) for y in self.free_var])
             elem.sort()
             return elem[0][1]
         if method == "biggest_const":
-            elem = [(len(x for x,z in self.const.keys() if z==y), -y) for y in self.free_var]
+            elem = [(len([x for x,z in self.const.keys() if z==y]), -y) for y in self.free_var]
             elem.sort(reverse=True)
-            return elem[0][1]
+            return -elem[0][1]
         if method == "biggest_const_non_inst":
-            elem = [(len(x for x,z in self.const.keys() if x in self.free_var and z==y), -y) for y in self.free_var]
+            elem = [(len([x for x,z in self.const.keys() if x in self.free_var and z==y]), -y) for y in self.free_var]
             elem.sort(reverse=True)
-            return elem[0][1]
+            return -elem[0][1]
 
     def ordered(self, var, dom):
         method = self.params["choose_val"]
@@ -108,7 +110,7 @@ class csp:
                         for b in self.current_dom(y):
                             if funct(val, b):
                                 support[val] = support[val] + 1
-            dom = np.sorted(dom, key=lambda x:support[x], reversed=True)
+            dom = sorted(dom, key=lambda x:support[x], reverse=True)
             return dom
 
 
