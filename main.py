@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import numpy as np
 from classes.csp import csp
 from classes.backtrack import solve
@@ -12,17 +8,13 @@ import os
 def parse_graph(filepath):
 	file = open(filepath, 'r')
 	lines = file.readlines()
-	# rien sur les 3 premières lignes, n et 2*m sur la 4e
 	info = lines[3].replace('\n', '').split(' ')
-	# nombre de sommets
 	n = int(info[2])
-	# nombre d'arêtes
 	m = int(info[3]) // 2
 	E = np.zeros((n, n))
 	for i in range(4, len(lines)):
 		line = lines[i].replace('\n', '').split(' ')
 		nodes = [int(p) for p in line if p.isdigit()]
-		# indices de 1 à n dans le fichier, 0 à n-1 dans le programme
 		E[nodes[0] - 1, nodes[1] - 1] = 1
 		E[nodes[1] - 1, nodes[0] - 1] = 1
 	file.close()
@@ -33,7 +25,7 @@ def solver_test(type_instance, instance, params, plot_table):
 	if type_instance == "n_queens":
 		problem = csp()
 		problem.n_queens(instance, params)
-		solve(problem, infos=False)
+		solve(problem)
 		print("solution finale pour ",instance, problem.inst)
 		print(problem.params)
 		plot_table["time"].append(problem.params["time"])
@@ -45,7 +37,7 @@ def solver_test(type_instance, instance, params, plot_table):
 		while colors > 0:
 			problem = csp()
 			problem.colorability(instance, colors, params)
-			solve(problem, infos=False)
+			solve(problem)
 			if len(problem.inst) == 0:
 				pb_vide_params = problem.params.copy()
 				break
@@ -55,7 +47,6 @@ def solver_test(type_instance, instance, params, plot_table):
 		stop = time.time()
 		print("nb colors", colors+1)
 		print("sol", sol)
-		# problem.colorability_solution(E)
 		print(sol_params)
 		print("not colorable", colors)
 		print("params", pb_vide_params)
@@ -346,7 +337,7 @@ def test_n_queen():
 	for n in range_n:
 		problem = csp()
 		problem.n_queens(n, params)
-		ended = solve(problem, infos=False, max_time=30)
+		ended = solve(problem, max_time=30)
 		if not ended:
 			print(n, "NOPE")
 		plot_table["time"].append(problem.params["time"])
@@ -381,7 +372,7 @@ def test_colorability():
 		while colors > 0:
 			problem = csp()
 			problem.colorability(E, colors, params)
-			ended = solve(problem, infos=False, max_time=30)
+			ended = solve(problem, max_time=30)
 			if not ended:
 				print("NOT ENDED")
 				break
@@ -393,7 +384,6 @@ def test_colorability():
 		print("best color", colors+1, "branches",sol_params["noeuds internes"])
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 	#test_n_queen_best_method()
 	#test_colorability_best_method()
@@ -402,4 +392,3 @@ if __name__ == '__main__':
 	#test_color_heuristic_val()
 	#test()
 	test_colorability()
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
